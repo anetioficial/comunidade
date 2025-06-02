@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Administrativo - ANETI</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-100">
+  <div id="root"></div>
+  
+  <script type="module">
+    import React, { useState, useEffect } from 'react';
+    import ReactDOM from 'react-dom';
+    import { BrowserRouter as Router, Route, Switch, Link, useParams } from 'react-router-dom';
+
+    // Componente de layout do painel administrativo
+    const AdminLayout = ({ children }) => {
+      return (
+        <div className="min-h-screen flex">
+          {/* Sidebar */}
+          <div className="w-64 bg-blue-800 text-white">
+            <div className="p-4">
+              <h1 className="text-xl font-bold">ANETI Admin</h1>
+            </div>
+            <nav className="mt-6">
+              <Link to="/admin" className="block py-3 px-4 hover:bg-blue-700">
+                Dashboard
+              </Link>
+              <Link to="/admin/registrations" className="block py-3 px-4 hover:bg-blue-700">
+                Cadastros Pendentes
+              </Link>
+              <Link to="/admin/plans" className="block py-3 px-4 hover:bg-blue-700">
+                Gerenciar Planos
+              </Link>
+              <Link to="/admin/users" className="block py-3 px-4 hover:bg-blue-700">
+                Usuários
+              </Link>
+              <Link to="/login" className="block py-3 px-4 hover:bg-blue-700 mt-8 text-red-300">
+                Sair
+              </Link>
+            </nav>
+          </div>
+          
+          {/* Conteúdo principal */}
+          <div className="flex-1 overflow-auto">
+            <header className="bg-white shadow">
+              <div className="px-6 py-4">
+                <h2 className="text-xl font-semibold text-gray-800">Painel Administrativo</h2>
+              </div>
+            </header>
+            
+            <main className="p-6">
+              {children}
+            </main>
+          </div>
+        </div>
+      );
+    };
+
+    // Componente de Dashboard
+    const Dashboard = () => {
+      // Dados simulados para o dashboard
+      const stats = {
+        pendingRegistrations: 12,
+        approvedUsers: 156,
+        rejectedRegistrations: 8,
+        totalPlans: 4
+      };
+      
+      return (
+        <div>
+          <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-gray-500 text-sm font-medium">Cadastros Pendentes</h3>
+              <p className="text-3xl font-bold text-blue-600">{stats.pendingRegistrations}</p>
+              <Link to="/admin/registrations" className="text-blue-500 text-sm mt-2 inline-block">
+                Ver todos →
+              </Link>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-gray-500 text-sm font-medium">Usuários Aprovados</h3>
+              <p className="text-3xl font-bold text-green-600">{stats.approvedUsers}</p>
+              <Link to="/admin/users" className="text-blue-500 text-sm mt-2 inline-block">
+                Ver todos →
+              </Link>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-gray-500 text-sm font-medium">Cadastros Rejeitados</h3>
+              <p className="text-3xl font-bold text-red-600">{stats.rejectedRegistrations}</p>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-gray-500 text-sm font-medium">Total de Planos</h3>
+              <p className="text-3xl font-bold text-purple-600">{stats.totalPlans}</p>
+              <Link to="/admin/plans" className="text-blue-500 text-sm mt-2 inline-block">
+                Gerenciar →
+              </Link>
+            </div>
+          </div>
+          
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold mb-4">Atividade Recente</h2>
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Usuário
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ação
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Data
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <tr>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">João Silva</div>
+                      <div className="text-sm text-gray-500">joao.silva@example.com</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">Cadastro</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">02/06/2025 14:30</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                        Pendente
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">Maria Oliveira</div>
+                      <div className="text-sm text-gray-500">maria.oliveira@example.com</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">Cadastro</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">01/06/2025 10:15</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Aprovado
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">Carlos Santos</div>
+                      <div className="text-sm text-gray-500">carlos.santos@example.com</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">Cadastro</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">31/05/2025 16:45</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                        Rejeitado
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Componente de listagem de cadastros pendentes
+    const PendingRegistrations = () => {
+      // Dados simulados de cadastros pendentes
+      const registrations = [
+        { id: 1, name: 'João Silva', email: 'joao.silva@example.com', plan: 'Júnior', date: '02/06/2025 14:30' },
+        { id: 2, name: 'Ana Souza', email: 'ana.souza@example.com', plan: 'Pleno', date: '02/06/2025 11:20' },
+        { id: 3, name: 'Pedro Costa', email: 'pedro.costa@example.com', plan: 'Público', date: '01/06/2025 18:45' },
+        { id: 4, name: 'Lucia Ferreira', email: 'lucia.ferreira@example.com', plan: 'Sênior', date: '01/06/2025 09:15' }
+      ];
+      
+      return (
+        <div>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Cadastros Pendentes</h1>
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                placeholder="Buscar por nome ou email"
+                className="px-4 py-2 border rounded-md"
+              />
+              <select className="px-4 py-2 border rounded-md">
+                <option value="">Todos os planos</option>
+                <option value="public">Público</option>
+                <option value="junior">Júnior</option>
+                <option value="pleno">Pleno</option>
+                <option value="senior">Sênior</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nome
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Plano
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Data
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {registrations.map((registration) => (
+                  <tr key={registration.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{registration.name}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">{registration.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{registration.plan}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">{registration.date}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <Link to={`/admin/registrations/${registration.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
+                        Detalhes
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    };
+
+    // Componente de detalhes de cadastro pendente
+    const RegistrationDetails = () => {
+      const { id } = useParams();
+      const [showRejectModal, setShowRejectModal] = useState(false);
+      const [rejectionReason, setRejectionReason] = useState('');
+      
+      // Dados simulados de um cadastro pendente
+      const registration = {
+        id: parseInt(id),
+        name: 'João Silva',
+        email: 'joao.silva@example.com',
+        plan: 'Júnior',
+        planPrice: 'R$ 99,90',
+        date: '02/06/2025 14:30',
+        linkedinProfile: 'https://linkedin.com/in/joao-silva',
+        paymentStatus: 'Aprovado',
+        documents: [
+          { id: 1, type: 'Documento de Identificação', name: 'rg.pdf' },
+          { id: 2, type: 'Comprovação de Experiência', name: 'carteira_trabalho.pdf' }
+        ]
+      };
+      
+      const handleApprove = () => {
+        // Simulação de aprovação
+        alert(`Cadastro #${id} aprovado com sucesso!`);
+        // Redirecionar para a lista de cadastros pendentes
+        window.location.href = '/admin/registrations';
+      };
+      
+      const handleReject = () => {
+        if (!rejectionReason.trim()) {
+          alert('Por favor, forneça uma justificativa para a rejeição.');
+          return;
+        }
+        
+        // Simulação de rejeição
+        alert(`Cadastro #${id} rejeitado. Justificativa: ${rejectionReason}`);
+        setShowRejectModal(false);
+        // Redirecionar para a lista de cadastros pendentes
+        window.location.href = '/admin/registrations';
+      };
+      
+      return (
+        <div>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Detalhes do Cadastro #{id}</h1>
+            <div className="flex space-x-2">
+              <button
+                onClick={handleApprove}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              >
+                Aprovar
+              </button>
+              <button
+                onClick={() => setShowRejectModal(true)}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Rejeitar
+              </button>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 className="text-lg font-semibold mb-4">Informações Pessoais</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Nome</p>
+                <p className="font-medium">{registration.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Email</p>
+                <p className="font-medium">{registration.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Plano</p>
+                <p className="font-medium">{registration.plan} ({registration.planPrice}/ano)</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Data de Cadastro</p>
+                <p className="font-medium">{registration.date}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Perfil LinkedIn</p>
+                <p className="font-medium">
+                  <a href={registration.linkedinProfile} target="_blank" className="text-blue-600 hover:underline">
+                    {registration.linkedinProfile}
+                  </a>
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Status do Pagamento</p>
+                <p className="font-medium text-green-600">{registration.paymentStatus}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold mb-4">Documentos</h2>
+            <div className="space-y-4">
+              {registration.documents.map((doc) => (
+                <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div>
+                    <p className="font-medium">{doc.type}</p>
+                    <p className="text-sm text-gray-500">{doc.name}</p>
+                  </div>
+                  <button className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200">
+                    Visualizar
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Modal de rejeição */}
+          {showRejectModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                <h3 className="text-lg font-semibold mb-4">Rejeitar Cadastro</h3>
+                <p className="mb-4 text-gray-600">
+                  Por favor, forneça uma justificativa para a rejeição deste cadastro.
+                  Esta informação será enviada ao usuário por e-mail.
+                </p>
+                <textarea
+                  className="w-full p-2 border rounded-md mb-4"
+                  rows="4"
+                  placeholder="Motivo da rejeição..."
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                ></textarea>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    onClick={() => setShowRejectModal(false)}
+                    className="px-4 py-2 border text-gray-700 rounded-md hover:bg-gray-100"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleReject}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                  >
+                    Confirmar Rejeição
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // Componente de gerenciamento de planos
+    const PlansManagement = () => {
+      const [showAddModal, setShowAddModal] = useState(false);
+      const [showEditModal, setShowEditModal] = useState(false);
+      const [editingPlan, setEditingPlan] = useState(null);
+      
+      // Dados simulados de planos
+      const [plans, setPlans] = useState([
+        { id: 1, name: 'Público', price: 0, isPublic: true, active: true, description: 'Acesso básico à comunidade' },
+        { id: 2, name: 'Júnior', price: 99.90, isPublic: false, active: true, description: 'Para profissionais em início de carreira' },
+        { id: 3, name: 'Pleno', price: 119.90, isPublic: false, active: true, description: 'Para profissionais com experiência intermediária' },
+        { id: 4, name: 'Sênior', price: 129.90, isPublic: false, active: true, description: 'Para profissionais experientes' }
+      ]);
+      
+      const [newPlan, setNewPlan] = useState({
+        name: '',
+        price: 0,
+        isPublic: false,
+        description: ''
+      });
+      
+      const handleAddPlan = () => {
+        // Validação básica
+        if (!newPlan.name) {
+          alert('O nome do plano é obrigatório');
+          return;
+        }
+        
+        // Simulação de adição de plano
+        const id = Math.max(...plans.map(p => p.id)) + 1;
+        setPlans([...plans, { ...newPlan, id, active: true }]);
+        setShowAddModal(false);
+        setNewPlan({ name: '', price: 0, isPublic: false, description: '' });
+      };
+      
+      const handleEditPlan = () => {
+        // Validação básica
+        if (!editingPlan.name) {
+          alert('O nome do plano é obrigatório');
+          return;
+        }
+        
+        // Simulação de edição de plano
+        setPlans(plans.map(p => p.id === editingPlan.id ? editingPlan : p));
+        setShowEditModal(false);
+        setEditingPlan(null);
+      };
+      
+      const handleToggleActive = (id) => {
+        // Simulação de ativação/desativação de plano
+        setPlans(plans.map(p => p.id === id ? { ...p, active: !p.active } : p));
+      };
+      
+      return (
+        <div>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Gerenciar Planos</h1>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Adicionar Plano
+            </button>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nome
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Preço
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tipo
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {plans.map((plan) => (
+                  <tr key={plan.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{plan.name}</div>
+                      <div className="text-xs text-gray-500">{plan.description}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {plan.isPublic ? 'Livre' : `R$ ${plan.price.toFixed(2)}`}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        plan.isPublic ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {plan.isPublic ? 'Público' : 'Pago'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        plan.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {plan.active ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => {
+                          setEditingPlan(plan);
+                          setShowEditModal(true);
+                        }}
+                        className="text-blue-600 hover:text-blue-900 mr-4"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleToggleActive(plan.id)}
+                        className={`${
+                          plan.active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'
+                        }`}
+                      >
+                        {plan.active ? 'Desativar' : 'Ativar'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Modal de adição de plano */}
+          {showAddModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                <h3 className="text-lg font-semibold mb-4">Adicionar Plano</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nome do Plano
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border rounded-md"
+                      value={newPlan.name}
+                      onChange={(e) => setNewPlan({ ...newPlan, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Preço (R$)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="w-full px-3 py-2 border rounded-md"
+                      value={newPlan.price}
+                      onChange={(e) => setNewPlan({ ...newPlan, price: parseFloat(e.target.value) || 0 })}
+                      disabled={newPlan.isPublic}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="isPublic"
+                      checked={newPlan.isPublic}
+                      onChange={(e) => setNewPlan({ ...newPlan, isPublic: e.target.checked, price: e.target.checked ? 0 : newPlan.price })}
+                      className="h-4 w-4 text-blue-600"
+                    />
+                    <label htmlFor="isPublic" className="ml-2 block text-sm text-gray-900">
+                      Plano Público (gratuito)
+                    </label>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Descrição
+                    </label>
+                    <textarea
+                      className="w-full px-3 py-2 border rounded-md"
+                      rows="3"
+                      value={newPlan.description}
+                      onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
+                    ></textarea>
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-2 mt-6">
+                  <button
+                    onClick={() => setShowAddModal(false)}
+                    className="px-4 py-2 border text-gray-700 rounded-md hover:bg-gray-100"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleAddPlan}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Adicionar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Modal de edição de plano */}
+          {showEditModal && editingPlan && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                <h3 className="text-lg font-semibold mb-4">Editar Plano</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nome do Plano
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border rounded-md"
+                      value={editingPlan.name}
+                      onChange={(e) => setEditingPlan({ ...editingPlan, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Preço (R$)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="w-full px-3 py-2 border rounded-md"
+                      value={editingPlan.price}
+                      onChange={(e) => setEditingPlan({ ...editingPlan, price: parseFloat(e.target.value) || 0 })}
+                      disabled={editingPlan.isPublic}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="editIsPublic"
+                      checked={editingPlan.isPublic}
+                      onChange={(e) => setEditingPlan({ ...editingPlan, isPublic: e.target.checked, price: e.target.checked ? 0 : editingPlan.price })}
+                      className="h-4 w-4 text-blue-600"
+                    />
+                    <label htmlFor="editIsPublic" className="ml-2 block text-sm text-gray-900">
+                      Plano Público (gratuito)
+                    </label>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Descrição
+                    </label>
+                    <textarea
+                      className="w-full px-3 py-2 border rounded-md"
+                      rows="3"
+                      value={editingPlan.description}
+                      onChange={(e) => setEditingPlan({ ...editingPlan, description: e.target.value })}
+                    ></textarea>
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-2 mt-6">
+                  <button
+                    onClick={() => setShowEditModal(false)}
+                    className="px-4 py-2 border text-gray-700 rounded-md hover:bg-gray-100"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleEditPlan}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Salvar Alterações
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // Componente principal do painel administrativo
+    const AdminPanel = () => {
+      return (
+        <Router>
+          <AdminLayout>
+            <Switch>
+              <Route exact path="/admin" component={Dashboard} />
+              <Route exact path="/admin/registrations" component={PendingRegistrations} />
+              <Route path="/admin/registrations/:id" component={RegistrationDetails} />
+              <Route path="/admin/plans" component={PlansManagement} />
+              <Route path="/">
+                <div className="text-center py-10">
+                  <h2 className="text-2xl font-bold mb-4">Bem-vindo ao Painel Administrativo</h2>
+                  <p className="text-gray-600">Selecione uma opção no menu lateral para começar.</p>
+                </div>
+              </Route>
+            </Switch>
+          </AdminLayout>
+        </Router>
+      );
+    };
+
+    // Renderização da aplicação
+    ReactDOM.render(
+      <AdminPanel />,
+      document.getElementById('root')
+    );
+  </script>
+</body>
+</html>

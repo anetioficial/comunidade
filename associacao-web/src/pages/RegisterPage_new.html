@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro - ANETI</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-50">
+  <div id="root"></div>
+  
+  <script type="module">
+    import React, { useState } from 'react';
+    import ReactDOM from 'react-dom';
+    import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+
+    // Componente de seleção de planos
+    const PlanSelection = ({ plans, selectedPlan, onSelectPlan }) => {
+      return (
+        <div className="my-8">
+          <h2 className="text-2xl font-bold mb-6">Selecione seu plano</h2>
+          
+          <div className="space-y-4">
+            {plans.map((plan) => (
+              <div 
+                key={plan.id}
+                className={`p-4 border rounded-lg flex justify-between items-center cursor-pointer ${
+                  selectedPlan === plan.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                }`}
+                onClick={() => onSelectPlan(plan.id)}
+              >
+                <div>
+                  <h3 className="text-lg font-medium">{plan.name}</h3>
+                  <p className="text-gray-600">
+                    {plan.isPublic ? 'Livre' : `R$${plan.price.toFixed(2)} por ano`}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">{plan.description}</p>
+                </div>
+                <button 
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full"
+                >
+                  Selecionar
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Componente de upload de documentos
+    const DocumentUpload = ({ onFileChange, documentType, required, label, helperText }) => {
+      const [fileName, setFileName] = useState('Nenhum arquivo selecionado');
+      
+      const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          setFileName(file.name);
+          onFileChange(documentType, file);
+        }
+      };
+      
+      return (
+        <div className="mb-6">
+          <label className="block text-gray-700 mb-2">
+            {label} {required && <span className="text-red-500">*</span>}
+          </label>
+          
+          <div className="flex items-center">
+            <label className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg cursor-pointer bg-white hover:bg-gray-50">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              <span>Escolher arquivo</span>
+              <input type="file" className="hidden" onChange={handleFileChange} accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+            </label>
+          </div>
+          
+          <p className="mt-2 text-sm text-gray-500">{fileName}</p>
+          <p className="mt-1 text-xs text-gray-400">{helperText}</p>
+        </div>
+      );
+    };
+
+    // Componente de formulário de pagamento
+    const PaymentForm = ({ onSubmit, planPrice }) => {
+      const [cardNumber, setCardNumber] = useState('');
+      const [expiryDate, setExpiryDate] = useState('');
+      const [cvv, setCvv] = useState('');
+      const [discountCode, setDiscountCode] = useState('');
+      const [discountApplied, setDiscountApplied] = useState(false);
+      const [finalPrice, setFinalPrice] = useState(planPrice);
+      
+      const handleApplyDiscount = () => {
+        if (discountCode && !discountApplied) {
+          // Simulação de desconto
+          const discount = 0.1; // 10%
+          setFinalPrice(planPrice * (1 - discount));
+          setDiscountApplied(true);
+        }
+      };
+      
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        onSubmit({
+          cardNumber,
+          expiryDate,
+          cvv,
+          discountCode: discountApplied ? discountCode : null,
+          finalPrice
+        });
+      };
+      
+      return (
+        <form onSubmit={handleSubmit} className="mt-6">
+          <h2 className="text-xl font-bold mb-4">Informações de pagamento</h2>
+          
+          <div className="mb-4">
+            <label className="block text-gray-700 mb-2">Número do cartão</label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              placeholder="1234 5678 9012 3456"
+              value={cardNumber}
+              onChange={(e) => setCardNumber(e.target.value)}
+              required
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-gray-700 mb-2">Data de validade</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="MM/AA"
+                value={expiryDate}
+                onChange={(e) => setExpiryDate(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2">CVV</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="123"
+                value={cvv}
+                onChange={(e) => setCvv(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="mb-6">
+            <label className="block text-gray-700 mb-2">Código de desconto</label>
+            <div className="flex">
+              <input
+                type="text"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md"
+                placeholder="Digite seu código"
+                value={discountCode}
+                onChange={(e) => setDiscountCode(e.target.value)}
+                disabled={discountApplied}
+              />
+              <button
+                type="button"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-r-md"
+                onClick={handleApplyDiscount}
+                disabled={!discountCode || discountApplied}
+              >
+                Aplicar
+              </button>
+            </div>
+          </div>
+          
+          <div className="mb-6">
+            <h3 className="text-lg font-bold">
+              Total: R${finalPrice.toFixed(2)}
+              {discountApplied && (
+                <span className="ml-2 text-sm text-green-600">(Desconto aplicado)</span>
+              )}
+            </h3>
+          </div>
+          
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-md font-medium"
+          >
+            Finalizar pagamento
+          </button>
+        </form>
+      );
+    };
+
+    // Componente principal de cadastro em etapas
+    const RegisterPage = () => {
+      const [currentStep, setCurrentStep] = useState(1);
+      const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        confirmEmail: '',
+        password: '',
+        confirmPassword: '',
+        selectedPlan: null,
+        documents: {},
+        linkedinProfile: '',
+        paymentInfo: null
+      });
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
+      
+      // Dados de exemplo para planos
+      const plans = [
+        { id: 'public', name: 'Público', price: 0, isPublic: true, description: 'Acesso básico à comunidade' },
+        { id: 'junior', name: 'Júnior', price: 99.90, isPublic: false, description: 'Para profissionais em início de carreira' },
+        { id: 'pleno', name: 'Pleno', price: 119.90, isPublic: false, description: 'Para profissionais com experiência intermediária' },
+        { id: 'senior', name: 'Sênior', price: 129.90, isPublic: false, description: 'Para profissionais experientes' }
+      ];
+      
+      const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+      };
+      
+      const handlePlanSelect = (planId) => {
+        setFormData({ ...formData, selectedPlan: planId });
+      };
+      
+      const handleFileChange = (documentType, file) => {
+        setFormData({
+          ...formData,
+          documents: {
+            ...formData.documents,
+            [documentType]: file
+          }
+        });
+      };
+      
+      const handlePaymentSubmit = (paymentInfo) => {
+        setFormData({ ...formData, paymentInfo });
+        handleNextStep();
+      };
+      
+      const handleNextStep = () => {
+        // Validação básica por etapa
+        if (currentStep === 1) {
+          if (!formData.name || !formData.email || !formData.confirmEmail || !formData.password || !formData.confirmPassword) {
+            setError('Todos os campos são obrigatórios');
+            return;
+          }
+          if (formData.email !== formData.confirmEmail) {
+            setError('Os e-mails não conferem');
+            return;
+          }
+          if (formData.password !== formData.confirmPassword) {
+            setError('As senhas não conferem');
+            return;
+          }
+        } else if (currentStep === 2) {
+          if (!formData.selectedPlan) {
+            setError('Selecione um plano');
+            return;
+          }
+        } else if (currentStep === 3) {
+          const requiredDocs = ['idDocument', 'experienceDocument'];
+          const missingDocs = requiredDocs.filter(doc => !formData.documents[doc]);
+          if (missingDocs.length > 0) {
+            setError('Todos os documentos obrigatórios devem ser enviados');
+            return;
+          }
+        }
+        
+        setError('');
+        setCurrentStep(currentStep + 1);
+      };
+      
+      const handlePrevStep = () => {
+        setCurrentStep(currentStep - 1);
+      };
+      
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        
+        try {
+          // Simulação de envio para API
+          console.log('Dados do formulário:', formData);
+          
+          // Em um cenário real, aqui seria feita a chamada para a API
+          setTimeout(() => {
+            setLoading(false);
+            // Redirecionar para página de sucesso ou pendente
+            alert('Cadastro realizado com sucesso! Seu cadastro está em análise.');
+            // window.location.href = '/pending-approval';
+          }, 2000);
+        } catch (error) {
+          console.error('Erro no cadastro:', error);
+          setError('Erro ao processar cadastro. Tente novamente.');
+          setLoading(false);
+        }
+      };
+      
+      return (
+        <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md w-full space-y-8">
+            <div>
+              <h1 className="text-center text-3xl font-extrabold text-gray-900">Cadastro ANETI</h1>
+              <p className="mt-2 text-center text-sm text-gray-600">
+                Junte-se à nossa comunidade de profissionais
+              </p>
+            </div>
+            
+            {/* Indicador de progresso */}
+            <div className="flex justify-between items-center mb-8">
+              {[1, 2, 3, 4].map((step) => (
+                <div key={step} className="flex flex-col items-center">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    currentStep >= step ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+                  }`}>
+                    {step}
+                  </div>
+                  <span className="text-xs mt-1">
+                    {step === 1 && 'Dados'}
+                    {step === 2 && 'Plano'}
+                    {step === 3 && 'Documentos'}
+                    {step === 4 && 'Pagamento'}
+                  </span>
+                </div>
+              ))}
+            </div>
+            
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <span className="block sm:inline">{error}</span>
+              </div>
+            )}
+            
+            <form onSubmit={handleSubmit}>
+              {/* Etapa 1: Informações básicas */}
+              {currentStep === 1 && (
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="name" className="block text-gray-700 mb-2">Nome completo <span className="text-red-500">*</span></label>
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="email" className="block text-gray-700 mb-2">E-mail <span className="text-red-500">*</span></label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="confirmEmail" className="block text-gray-700 mb-2">Confirme o e-mail <span className="text-red-500">*</span></label>
+                    <input
+                      id="confirmEmail"
+                      name="confirmEmail"
+                      type="email"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      value={formData.confirmEmail}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="password" className="block text-gray-700 mb-2">Senha <span className="text-red-500">*</span></label>
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      A senha deve ter pelo menos 12 caracteres, incluindo letras maiúsculas, minúsculas, números e símbolos.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="confirmPassword" className="block text-gray-700 mb-2">Confirme a senha <span className="text-red-500">*</span></label>
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Etapa 2: Seleção de plano */}
+              {currentStep === 2 && (
+                <PlanSelection
+                  plans={plans}
+                  selectedPlan={formData.selectedPlan}
+                  onSelectPlan={handlePlanSelect}
+                />
+              )}
+              
+              {/* Etapa 3: Upload de documentos */}
+              {currentStep === 3 && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-bold mb-4">Documentos necessários</h2>
+                  
+                  <DocumentUpload
+                    documentType="idDocument"
+                    required={true}
+                    label="Documento de identificação"
+                    helperText="RG, CNH, Passaporte ou Carteira de Trabalho"
+                    onFileChange={handleFileChange}
+                  />
+                  
+                  <DocumentUpload
+                    documentType="experienceDocument"
+                    required={true}
+                    label="Comprovação de experiência em T.I."
+                    helperText={formData.selectedPlan === 'public' 
+                      ? "Currículo ou documento formal" 
+                      : "Carteira de trabalho, declaração de empresa ou certificados"}
+                    onFileChange={handleFileChange}
+                  />
+                  
+                  <div className="mb-4">
+                    <label htmlFor="linkedinProfile" className="block text-gray-700 mb-2">Perfil LinkedIn (opcional)</label>
+                    <input
+                      id="linkedinProfile"
+                      name="linkedinProfile"
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      placeholder="https://www.linkedin.com/in/seu-perfil"
+                      value={formData.linkedinProfile}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Etapa 4: Pagamento (apenas para planos pagos) */}
+              {currentStep === 4 && (
+                <div>
+                  {formData.selectedPlan && formData.selectedPlan !== 'public' ? (
+                    <PaymentForm
+                      onSubmit={handlePaymentSubmit}
+                      planPrice={plans.find(p => p.id === formData.selectedPlan)?.price || 0}
+                    />
+                  ) : (
+                    <div className="text-center py-8">
+                      <h2 className="text-xl font-bold mb-4">Confirmar cadastro</h2>
+                      <p className="mb-6">Você selecionou o plano Público, que é gratuito.</p>
+                      <button
+                        type="submit"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-md font-medium"
+                        disabled={loading}
+                      >
+                        {loading ? 'Processando...' : 'Finalizar cadastro'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Botões de navegação */}
+              {currentStep < 4 && (
+                <div className="flex justify-between mt-8">
+                  {currentStep > 1 && (
+                    <button
+                      type="button"
+                      onClick={handlePrevStep}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                    >
+                      Voltar
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleNextStep}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ml-auto"
+                  >
+                    Próximo
+                  </button>
+                </div>
+              )}
+            </form>
+            
+            <div className="text-center mt-4">
+              <p className="text-sm text-gray-600">
+                Já tem uma conta? <a href="/login" className="text-blue-600 hover:text-blue-800">Faça login</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Componente de página de cadastro em análise
+    const PendingApprovalPage = () => {
+      return (
+        <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md w-full text-center">
+            <div className="mb-8">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Cadastro em análise</h1>
+            
+            <p className="text-lg text-gray-600 mb-6">
+              Seu cadastro está sendo analisado pela equipe da ANETI.
+            </p>
+            
+            <p className="text-gray-600 mb-8">
+              Você será notificado por e-mail assim que seu cadastro for aprovado.
+              Este processo geralmente leva até 48 horas úteis.
+            </p>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+              <h3 className="font-medium text-blue-800 mb-2">Precisa de ajuda?</h3>
+              <p className="text-blue-700 text-sm">
+                Se tiver alguma dúvida ou precisar atualizar informações, entre em contato conosco pelo e-mail: 
+                <a href="mailto:suporte@aneti.org.br" className="font-medium underline ml-1">suporte@aneti.org.br</a>
+              </p>
+            </div>
+            
+            <div className="mt-8">
+              <a href="/login" className="text-blue-600 hover:text-blue-800">
+                Voltar para a página de login
+              </a>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Renderização da aplicação
+    ReactDOM.render(
+      <Router>
+        <Switch>
+          <Route path="/register" component={RegisterPage} />
+          <Route path="/pending-approval" component={PendingApprovalPage} />
+          <Route path="/">
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="text-center">
+                <h1 className="text-3xl font-bold mb-4">ANETI - Página de Demonstração</h1>
+                <div className="space-y-4">
+                  <Link to="/register" className="block px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Ir para Cadastro
+                  </Link>
+                  <Link to="/pending-approval" className="block px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+                    Ver Página de Cadastro em Análise
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </Route>
+        </Switch>
+      </Router>,
+      document.getElementById('root')
+    );
+  </script>
+</body>
+</html>
